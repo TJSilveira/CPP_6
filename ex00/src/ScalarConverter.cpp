@@ -1,6 +1,4 @@
-#include <iostream>
-#include <ostream>
-#include <limits>
+
 #include "../includes/ScalarConverter.hpp"
 
 ScalarConverter::ScalarConverter(void): _type('n'), _value(0)
@@ -30,6 +28,7 @@ ScalarConverter& ScalarConverter::operator=(const ScalarConverter& other)
 
 ScalarConverter::ScalarConverter(std::string& str): _type('n'), _value(0)
 {
+
 	this->convert(str);
 }
 
@@ -39,14 +38,7 @@ ScalarConverter::~ScalarConverter(void)
 	return;
 }
 
-static bool	is_character(char c)
-{
-	if (c < '0' || c > '9')
-		return (true);
-	else
-		return (false);	
-}
-
+	// is_type functions
 
 static bool	is_float(std::string& input)
 {
@@ -106,7 +98,7 @@ static bool	is_double(std::string& input)
 	return (true);
 }
 
-bool	ScalarConverter::is_int(std::string& input)
+static bool	is_int(std::string& input)
 {
 	int i;
 
@@ -115,97 +107,39 @@ bool	ScalarConverter::is_int(std::string& input)
 		i++;
 	while (input[++i])
 	{
-		std::cout << "["<<i<<"] Index: " << input[i]<< "\n";
 		if (input[i] < '0' || input[i] > '9')
 			return(false);
 	}
 	return (true);
 }
 
-bool	ScalarConverter::fits_in_type(void)
+	// helper functions for convert 
+static bool	fits_in_type(long double num, t_convert *con_struct)
 {
-	if (this->_type == 'i')
+	if (con_struct->type == 'i')
 	{
-		if (this->_value > std::numeric_limits<int>::max() ||
-		this->_value < std::numeric_limits<int>::min())
+		if (num > static_cast<long double>(std::numeric_limits<int>::max()) ||
+		num < static_cast<long double>(std::numeric_limits<int>::min()))
 			return (false);
 		return (true);
 	}
-	if (this->_type == 'f')
+	if (con_struct->type == 'f')
 	{
-		if (this->_value > std::numeric_limits<float>::max() ||
-		this->_value < std::numeric_limits<float>::min())
+		if (num > std::numeric_limits<float>::max() ||
+		num < -std::numeric_limits<float>::max())
 			return (false);
 		return (true);
 	}
 	else
 	{
-		if (this->_value > std::numeric_limits<double>::max() ||
-		this->_value < std::numeric_limits<double>::min())
+		if (num > std::numeric_limits<double>::max() ||
+		num < -std::numeric_limits<double>::max())
 			return (false);
 		return (true);
 	}
 }
 
-void ScalarConverter::convert(std::string& input)
-{
-	// char	c;
-	// int		i;
-	// float	f;
-	// double	d;
-
-	// check for char
-	if (input.length() == 1 && is_character(input[0]))
-	{
-		// c = input[0];
-		this->_type = 'c';
-	}
-	// check for int
-	else if (input.length() > 0 && is_int(input))
-		this->_type = 'i';
-	// check for double
-	else if (input.length() > 0 && is_double(input))
-		this->_type = 'd';
-	// check for float
-	else if (input.length() > 0 && is_float(input))
-		this->_type = 'f';
-	else if (input.length() == 4 && input.compare("+inf"))
-	{
-		this->_type = INF_D;
-		this->_value = std::numeric_limits<double>::infinity();
-	}
-	else if (input.length() == 4 && input.compare("-inf"))
-	{
-		this->_type = NEG_INF_D;
-		this->_value = -std::numeric_limits<double>::infinity();
-	}
-	else if (input.length() == 5 && input.compare("+inff"))
-	{
-		this->_type = INF_F;
-		this->_value = std::numeric_limits<float>::infinity();
-	}
-	else if (input.length() == 5 && input.compare("-inff"))
-	{
-		this->_type = NEG_INF_F;
-		this->_value = -std::numeric_limits<float>::infinity();
-	}
-	else if (input.length() == 3 && input.compare("nan"))
-		this->_type = NAN_D;
-	else if (input.length() == 4 && input.compare("nanf"))
-		this->_type = NAN_F;
-
-	std::cout << "[" << input << "]This is the type: " << this->_type << ";\n";
-
-	if (this->_type == 'i' || this->_type == 'f' || this->_type == 'd')
-	{
-		this->getValue(input);
-		std::cout << "[This is the value]: " << this->_value << "\n";
-		if (!this->fits_in_type())
-			throw ScalarConverter::Impossible();
-	}
-}
-
-void	ScalarConverter::getValue(std::string& input)
+static long double	getValue(std::string& input)
 {
 	long double	num;
 	long double	precision;
@@ -249,42 +183,337 @@ void	ScalarConverter::getValue(std::string& input)
 	while (decimal_places--)
 	{
 		if (precision > std::numeric_limits<double>::max() ||
-		precision < std::numeric_limits<double>::min())
+		precision < -std::numeric_limits<double>::max())
 			throw ScalarConverter::Impossible();
 		precision /= 10;
 	}
 	num += precision;
 	num *= sign;
-	if (this->_value > std::numeric_limits<double>::max() ||
-		this->_value < std::numeric_limits<double>::min())
+	std::cout << "This si the final number tthat we are converting:"<< std::setprecision(12) << num << ";\n";
+	if (num > std::numeric_limits<long double>::max() ||
+		num < -std::numeric_limits<long double>::max())
 			throw ScalarConverter::Impossible();
-
-	this->setValue(num);
+	return (num);
 }
 
-void	ScalarConverter::setValue(double num)
+static void	setValue(long double num, t_convert *con_struct)
 {
-	this->_value = num;
+	if (!(con_struct->type == 'i' || con_struct->type == 'f' || con_struct->type == 'd'))
+		return;
+	if (!fits_in_type(num, con_struct))
+		throw ScalarConverter::Impossible();
+	if (con_struct->type == 'i')
+		con_struct->i = static_cast<int>(num);
+	else if (con_struct->type == 'f')
+		con_struct->f = static_cast<float>(num);
+	else if (con_struct->type == 'd')
+		con_struct->d = static_cast<double>(num);
 }
 
-int	ScalarConverter::asInt(void)
+void	init_t_convert(t_convert *con_struct)
 {
-	if (this->_value > std::numeric_limits<int>::max() ||
-		this->_value < std::numeric_limits<int>::min())
+	con_struct->type = 'n';
+	con_struct->c = 0;
+	con_struct->i = 0;
+	con_struct->f = 0.f;
+	con_struct->d = 0.;
+}
+
+void	convert_get_type(std::string& input, t_convert *con_struct)
+{
+	if (input.length() == 3 && input[0] == '\'' && input[2] == '\'')
+	{
+		con_struct->type = 'c';
+		con_struct->c = static_cast<char>(input[1]);
+	}
+	else if (input.length() > 0 && is_int(input))
+		con_struct->type = 'i';
+	else if (input.length() > 0 && is_double(input))
+		con_struct->type = 'd';
+	else if (input.length() > 0 && is_float(input))
+		con_struct->type = 'f';
+	else if (input.length() == 4 && input.compare("+inf") == 0)
+	{
+		con_struct->type = INF_D;
+		con_struct->d = std::numeric_limits<double>::infinity();
+	}
+	else if (input.length() == 4 && input.compare("-inf") == 0)
+	{
+		con_struct->type = NEG_INF_D;
+		con_struct->d = -std::numeric_limits<double>::infinity();
+	}
+	else if (input.length() == 5 && input.compare("+inff") == 0)
+	{
+		con_struct->type = INF_F;
+		con_struct->f = std::numeric_limits<float>::infinity();
+	}
+	else if (input.length() == 5 && input.compare("-inff") == 0)
+	{
+		con_struct->type = NEG_INF_F;
+		con_struct->f = -std::numeric_limits<float>::infinity();
+	}
+	else if (input.length() == 3 && input.compare("nan") == 0)
+	{
+		con_struct->type = NAN_D;
+		con_struct->d = static_cast<double>(NAN);
+	}
+	else if (input.length() == 4 && input.compare("nanf") == 0)
+	{
+		con_struct->type = NAN_F;
+		con_struct->f = static_cast<float>(NAN);
+	}
+}
+
+static int	safe_double_to_int(double d)
+{
+	if (d < static_cast<double>(std::numeric_limits<int>::min()) || 
+		d > static_cast<double>(std::numeric_limits<int>::max()))
 	{
 		throw ScalarConverter::Overflow();
 	}
-	return (static_cast<int>(this->_value));
+	return (static_cast<int>(d));
 }
 
-float	ScalarConverter::asFloat(void)
+static char	safe_double_to_char(double d)
 {
-	if (this->_value > std::numeric_limits<float>::max() ||
-		this->_value < std::numeric_limits<float>::min())
+	if (d < static_cast<double>(std::numeric_limits<char>::min()) || 
+		d > static_cast<double>(std::numeric_limits<char>::max()))
 	{
 		throw ScalarConverter::Overflow();
 	}
-	return (static_cast<float>(this->_value));
+	return (static_cast<char>(d));
+}
+
+static float	safe_double_to_float(double d)
+{
+	if (d < static_cast<double>(-std::numeric_limits<float>::max()) || 
+		d > static_cast<double>(std::numeric_limits<float>::max()))
+	{
+		throw ScalarConverter::Overflow();
+	}
+	return (static_cast<float>(d));
+}
+
+	// helper functions for print 
+void	print_char(t_convert *con_struct)
+{
+	char to_print;
+
+	if (con_struct->type == INF_D ||
+		con_struct->type == NEG_INF_D ||
+		con_struct->type == INF_F ||
+		con_struct->type == NEG_INF_F ||
+		con_struct->type == NAN_D ||
+		con_struct->type == NAN_F)
+	{
+		std::cout << "impossible";
+		return;
+	}
+	else if (con_struct->type == 'c')
+		to_print = con_struct->c;
+	else if (con_struct->type == 'i')
+	{
+		try
+		{
+			to_print = safe_double_to_char(static_cast<double>(con_struct->i));
+		}
+		catch(const ScalarConverter::Overflow& e)
+		{
+			std::cout << "overflow";
+			return;
+		}
+	}
+	else if (con_struct->type == 'f')
+	{
+		try
+		{
+			to_print = safe_double_to_char(static_cast<double>(con_struct->f));
+		}
+		catch(const ScalarConverter::Overflow& e)
+		{
+			std::cout << "overflow";
+			return;
+		}
+	}
+	else
+	{
+		try
+		{
+			to_print = safe_double_to_char(con_struct->d);
+		}
+		catch(const ScalarConverter::Overflow& e)
+		{
+			std::cout << "overflow";
+			return;
+		}
+	}
+	if (std::isprint(to_print))
+		std::cout << "\'" << to_print << "\'";
+	else
+		std::cout << "Non displayable";	
+}
+
+void	print_int(t_convert *con_struct)
+{
+	int to_print;
+
+	if (con_struct->type == INF_D ||
+		con_struct->type == NEG_INF_D ||
+		con_struct->type == INF_F ||
+		con_struct->type == NEG_INF_F ||
+		con_struct->type == NAN_D ||
+		con_struct->type == NAN_F)
+	{
+		std::cout << "impossible";
+		return;
+	}
+
+	if (con_struct->type == 'i')
+		to_print = con_struct->i;
+	else if (con_struct->type == 'c')
+		to_print = static_cast<int>(con_struct->c);
+	else if (con_struct->type == 'f')
+	{
+		try
+		{
+			to_print = safe_double_to_int(static_cast<double>(con_struct->f));
+		}
+		catch(const ScalarConverter::Overflow& e)
+		{
+			std::cout << "overflow";
+			return;
+		}
+	}
+	else
+	{
+		try
+		{
+			to_print = safe_double_to_int(con_struct->d);
+		}
+		catch(const ScalarConverter::Overflow& e)
+		{
+			std::cout << "overflow";
+			return;
+		}
+	}
+	std::cout << to_print;
+}
+
+void	print_float(t_convert *con_struct)
+{
+	float	to_print;
+
+	if (con_struct->type == INF_F ||
+		con_struct->type == NEG_INF_F ||
+		con_struct->type == NAN_F)
+	{
+		to_print = con_struct->f;
+	}
+	else if (con_struct->type == INF_D ||
+		con_struct->type == NEG_INF_D ||
+		con_struct->type == NAN_D)
+	{
+		to_print = static_cast<float>(con_struct->d);
+	}
+	else if (con_struct->type == 'i')
+		to_print = static_cast<float>(con_struct->i);
+	else if (con_struct->type == 'c')
+		to_print = static_cast<float>(con_struct->c);
+	else if (con_struct->type == 'f')
+		to_print = con_struct->f;
+	else
+	{
+		try
+		{
+			to_print = safe_double_to_float(con_struct->d);
+		}
+		catch(const ScalarConverter::Overflow& e)
+		{
+			std::cout << "overflow";
+			return;
+		}
+	}
+	std::cout << std::fixed << std::setprecision(1)<< to_print << 'f';
+}
+
+void	print_double(t_convert *con_struct)
+{
+	double	to_print;
+
+	if (con_struct->type == INF_F ||
+		con_struct->type == NEG_INF_F ||
+		con_struct->type == NAN_F)
+	{
+		to_print = static_cast<double>(con_struct->f);
+	}
+	else if (con_struct->type == INF_D ||
+		con_struct->type == NEG_INF_D ||
+		con_struct->type == NAN_D)
+	{
+		to_print = con_struct->d;
+	}
+	else if (con_struct->type == 'i')
+		to_print = static_cast<double>(con_struct->i);
+	else if (con_struct->type == 'c')
+		to_print = static_cast<double>(con_struct->c);
+	else if (con_struct->type == 'f')
+		to_print = static_cast<double>(con_struct->f);
+	else
+		to_print = con_struct->d;
+	std::cout << to_print;
+}
+
+void	print_conversion_summary(t_convert *con_struct)
+{
+	std::cout << "char: ";
+	print_char(con_struct); 
+	std::cout << "\nint: ";
+	print_int(con_struct);
+	std::cout << "\nfloat: ";
+	print_float(con_struct);
+	std::cout << "\ndouble: ";
+	print_double(con_struct);
+	std::cout << "\n";
+}
+
+void	print_conversion_summary_impossible()
+{
+	std::cout << "char: impossible\n" <<
+		"int: impossible\n" <<
+		"float: impossible\n" << 
+		"double: impossible\n";	
+}
+
+void ScalarConverter::convert(std::string& input)
+{
+	t_convert con_struct;
+
+	init_t_convert(&con_struct);
+	convert_get_type(input, &con_struct);
+	std::cout << "[" << input << "]This is the con_struct.type: " << con_struct.type << ";\n\n";
+
+	if (con_struct.type == 'n')
+	{
+		print_conversion_summary_impossible();
+		return;
+	}
+
+	try
+	{
+		if (con_struct.type == 'i' || con_struct.type == 'f' || con_struct.type == 'd')
+		{
+			setValue(getValue(input), &con_struct);
+		}		
+	}
+	catch(const ScalarConverter::Impossible& e)
+	{
+		std::cout << "char: impossible\n" <<
+			"int: impossible\n" <<
+			"float: impossible\n" << 
+			"double: impossible\n";
+		return;
+	}
+	print_conversion_summary(&con_struct);
 }
 
 const char *ScalarConverter::Impossible::what(void) const throw()
@@ -292,23 +521,7 @@ const char *ScalarConverter::Impossible::what(void) const throw()
 	return ("impossible");
 }
 
-const char *ScalarConverter::NonDisplayable::what(void) const throw()
-{
-	return ("Non displayable");
-}
-
 const char *ScalarConverter::Overflow::what(void) const throw()
 {
-	return ("Impossible");
+	return ("Overflow");
 }
-
-// std::ostream&	operator<<(std::ostream& os, const ScalarConverter* obj)
-// {
-// 		// os <<	"Name: " << obj->getName() << "; " <<
-// 		// 		"Signed: " << obj->getSigned() << "; " <<
-// 		// 		"SigningGrade: " << obj->getSigningGrade() << "; " <<
-// 		// 		"ExecutionGrade: " << obj->getExecutionGrade() << ";";
-// 		// return(os);
-// }
-
-

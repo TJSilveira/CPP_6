@@ -1,6 +1,10 @@
 #ifndef SCALARCONVERTER_HPP
 #define SCALARCONVERTER_HPP
 #include <iostream>
+#include <iomanip>
+#include <ostream>
+#include <limits>
+#include <cmath>
 
 #define INF_D 'q'
 #define NEG_INF_D 'w'
@@ -9,17 +13,18 @@
 #define NAN_D 't'
 #define NAN_F 'y'
 
+typedef struct s_convert
+{
+	char	type;
+	char	c;
+	int		i;
+	float	f;
+	double	d;
+}	t_convert;
+
 class ScalarConverter
 {
 private:
-	char			_type;
-	long double		_value;
-
-	void	convert(std::string& input);
-	bool	is_int(std::string& input);
-	bool	fits_in_type(void);
-	int		asInt(void);
-	float	asFloat(void);
 
 public:
 	// Constructors
@@ -33,17 +38,9 @@ public:
 	// Destructor
 	~ScalarConverter(void);
 
-	// Setters
-	void	setValue(double num);
-	void	getValue(std::string& input);
+	static void	convert(std::string& input);
 
 	class Impossible : public std::exception
-	{
-	public:
-		virtual const char *what() const throw();
-	};
-
-	class NonDisplayable : public std::exception
 	{
 	public:
 		virtual const char *what() const throw();
@@ -55,8 +52,5 @@ public:
 		virtual const char *what() const throw();
 	};
 };
-
-// ostream Overload
-std::ostream&	operator<<(std::ostream& os, const ScalarConverter* obj);
 
 #endif
