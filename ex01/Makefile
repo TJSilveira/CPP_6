@@ -1,4 +1,4 @@
-NAME	= ex00
+NAME	= ex01
 
 CXX		= c++
 
@@ -7,7 +7,7 @@ CXXFLAGS	= -Wall -Wextra -Werror -std=c++98 -fsanitize=address
 SRC_DIR			= ./src/
 OBJS_DIR		= ./objs/
 
-SRC_FILES		=	ScalarConverter.cpp \
+SRC_FILES		=	Serializer.cpp \
 			main.cpp
 
 

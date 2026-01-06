@@ -25,19 +25,16 @@ typedef struct s_convert
 class ScalarConverter
 {
 private:
-
-public:
 	// Constructors
 	ScalarConverter(void);
 	ScalarConverter(const ScalarConverter& other);
-	ScalarConverter(std::string& str);
 
 	// Overloaded Operator
 	ScalarConverter&		operator=(const ScalarConverter& other);	
 
 	// Destructor
 	~ScalarConverter(void);
-
+public:
 	static void	convert(std::string& input);
 
 	class Impossible : public std::exception

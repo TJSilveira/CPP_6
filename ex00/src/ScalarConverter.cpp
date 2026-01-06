@@ -1,14 +1,14 @@
 
 #include "../includes/ScalarConverter.hpp"
 
-ScalarConverter::ScalarConverter(void): _type('n'), _value(0)
+ScalarConverter::ScalarConverter(void)
 {
 	std::cout << "[ScalarConverter] Default constructor called. " <<
 				std::endl;
 	return;
 }
 
-ScalarConverter::ScalarConverter(const ScalarConverter& other): _type(other._type), _value(other._value)
+ScalarConverter::ScalarConverter(const ScalarConverter& other)
 {
 	std::cout << "[ScalarConverter] Copy constructor called. " <<
 				std::endl;
@@ -24,12 +24,6 @@ ScalarConverter& ScalarConverter::operator=(const ScalarConverter& other)
 	if(this != &other)
 		return *this;
 	return *this;
-}
-
-ScalarConverter::ScalarConverter(std::string& str): _type('n'), _value(0)
-{
-
-	this->convert(str);
 }
 
 	// Destructor
@@ -507,10 +501,7 @@ void ScalarConverter::convert(std::string& input)
 	}
 	catch(const ScalarConverter::Impossible& e)
 	{
-		std::cout << "char: impossible\n" <<
-			"int: impossible\n" <<
-			"float: impossible\n" << 
-			"double: impossible\n";
+		print_conversion_summary_impossible();
 		return;
 	}
 	print_conversion_summary(&con_struct);
