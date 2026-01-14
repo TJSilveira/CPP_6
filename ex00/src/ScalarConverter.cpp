@@ -183,7 +183,7 @@ static long double	getValue(std::string& input)
 	}
 	num += precision;
 	num *= sign;
-	std::cout << "This si the final number tthat we are converting:"<< std::setprecision(12) << num << ";\n";
+	// std::cout << "This is the final number tthat we are converting:"<< std::setprecision(12) << num << ";\n";
 	if (num > std::numeric_limits<long double>::max() ||
 		num < -std::numeric_limits<long double>::max())
 			throw ScalarConverter::Impossible();
@@ -484,7 +484,7 @@ void ScalarConverter::convert(std::string& input)
 
 	init_t_convert(&con_struct);
 	convert_get_type(input, &con_struct);
-	std::cout << "[" << input << "]This is the con_struct.type: " << con_struct.type << ";\n\n";
+	// std::cout << "[" << input << "]This is the con_struct.type: " << con_struct.type << ";\n\n";
 
 	if (con_struct.type == 'n')
 	{

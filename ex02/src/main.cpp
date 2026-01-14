@@ -32,8 +32,6 @@ void identify(Base& p)
 {
 	Base ptr;
 
-	srand(time(NULL));
-
 	try
 	{
 		ptr = dynamic_cast<A&>(p);
@@ -56,6 +54,7 @@ void identify(Base& p)
 
 int main()
 {
+	srand(time(NULL));
 	Base *array[10];
 	for (size_t i = 0; i < 10; i++)
 	{
